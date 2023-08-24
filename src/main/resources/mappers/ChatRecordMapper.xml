@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nan.chatai.dao.ChatRecordMapper">
+
+    <select id="selectUserChatRecord" parameterType="String" resultType="com.nan.chatai.entity.app.ChatRecord">
+         select userId,sessionId,userQuestions,aiAnswer,time from
+             (
+             select USER_ID as userId,SESSION_ID as sessionId,USER_QUESTIONS as userQuestions,AI_ANSWER as aiAnswer,
+             TIME as time, ROW_NUMBER() OVER (PARTITION BY SESSION_ID ORDER BY TIME) as ROW_NO
+             from chat_log
+             where USER_ID=#{userId}
+             ) AS res
+         where res.ROW_NO =1
+    </select>
+
+</mapper>

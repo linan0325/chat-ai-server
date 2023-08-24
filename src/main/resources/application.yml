@@ -1,0 +1,46 @@
+server:
+  port: 8070
+
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    cache: false
+    mode: HTML5
+    encoding: utf-8
+    suffix: .html
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/chat-ai?serverTimezone=GMT%2B8&useSSL=false
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    password: Root123%
+    username: root
+
+chat-ai:
+  url: "https://api.openai.com/v1/chat/completions"
+#  key: "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"
+  key: "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"
+  proxy:
+    host: 127.0.0.1
+    #host: 192.168.2.127
+    port: 7890
+
+wx-app:
+  userAvatar: D:\code\chat-ai-server\src\main\resources\static\app-images\avatar
+
+
+#  mvc:
+#    view:
+#      suffix: .html
+#    static-path-pattern: /**
+#  web:
+#    resources:
+#      static-locations: classpath:/templates/,classpath:/static/
+#mybatis:
+#  mapper-locations: classpath:mappers/*
+#  type-aliases-package: com.nan.chatai.entity.*
+
+mybatis-plus:
+  mapper-locations: classpath:mappers/*
+  type-aliases-package: com.nan.chatai.entity.*
+
+

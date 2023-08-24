@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 Chat AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 70px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .container h1 {
+            text-align: center;
+            margin-bottom: 45px;
+            /*margin-top: 20px;*/
+        }
+
+        /*
+        container input[type="password"],
+        */
+
+        .container input[type="text"],
+        .container input[type="phone"],
+        .container input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            /*margin-bottom: 20px;*/
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            margin-top: 40px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .message-hint {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .container button:hover {
+            background-color: #45a049;
+        }
+        .shake {
+            animation: shake 1.2s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-10px);
+            }
+
+            20%, 40%, 60%, 80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 12px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* CSS样式 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .count {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /*background-color: white;*/
+            background-color: rgba(0, 0, 0, 0.5);
+            font-size: 20px;
+            color: blue;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .popup {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <h1>注册 Chat AI</h1>
+
+    <form name="user">
+        <span class="message-hint" id="error-username"></span>
+        <input type="text" name="username" id="username" placeholder="用户名" required>
+
+        <span class="message-hint" id="error-phone"></span>
+        <input type="text" name="phone" id="phone" placeholder="手机" required>
+
+        <span class="message-hint" id="error-email"></span>
+        <input type="email" name="email" id="email" placeholder="邮箱" required>
+
+        <span class="message-hint" id="msg-password">密码长度至少为 6 个字符</span>
+        <input type="password" name="password" id="password" placeholder="密码" required>
+
+
+    </form>
+    <button type="submit" onclick="submitFrom()">注册</button>
+</div>
+
+<!-- 登录失败的弹窗 -->
+<div class="overlay" id="popup-overlay" style="display: none;">
+    <div class="popup">
+<!--        <h2>操作失败</h2>-->
+        <p>操作失败，系统故障</p>
+        <button class="close-btn" onclick="closePopup()">Close</button>
+    </div>
+
+</div >
+
+<div class="count" id="timer-lay" style="display: none">
+    <p>注册成功 <span id="countdown"></span> 秒后跳转登入。</p>
+</div>
+
+</body>
+
+<script type="text/javascript">
+
+    function submitFrom(){
+
+        event.preventDefault();
+
+        let user=validateForm();
+
+        if(user instanceof Object){
+
+            // $.ajax({
+            //     type: "POST",
+            //     url: "http://192.168.2.127:8070/chat-ai/user-register",
+            //     data: JSON.stringify(user),
+            //     contentType: "application/json;charset=utf-8",
+            //     success: function (response){
+            //          //$("from")[0].reset();
+            //         // location.reload();
+            //         //计数5秒
+            //         let countdown=5;
+            //         let countDownElement=document.getElementById("timer-lay");
+            //         countDownElement.style.display='flex'
+            //         let countDownSpanElement=document.getElementById("countdown");
+            //         countDownSpanElement.innerText=countdown.toString();
+            //
+            //         //开始计时
+            //         let timer=setInterval(function (){
+            //
+            //             countdown--;
+            //             countDownSpanElement.innerText=countdown.toString();
+            //
+            //             //倒数为0是开始跳转
+            //             if(countdown===0){
+            //                 clearInterval(timer);
+            //                 window.location.href=response.redirect;
+            //                 //window.location.href="http://localhost:8070/chat-ai/";
+            //             }
+            //         },1000)//1秒执行一次
+            //     },
+            //     error: function (){
+            //
+            //         let overlay = document.getElementById('popup-overlay');
+            //         overlay.style.display = 'flex';
+            //
+            //     }
+            //
+            // })
+
+            $.ajax({
+                type: "POST",
+                //url: "http://192.168.2.127:8070/chat-ai/user-register",
+                url: "http://192.168.179.1:8070/chat-ai/user-register",
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                complete: function (response){
+                    // console.log("data: "+response);
+                    // console.log("data type: "+typeof response);
+                    // console.log("data json: "+JSON.stringify(response));
+                    let status=JSON.parse(response["responseText"])["code"];
+                    let message=JSON.parse(response["responseText"])["message"];
+                    // console.log("status: "+typeof status);
+                    // console.log("message: "+message);
+
+                    if(status===200){
+                                //success
+                                let countdown=5;
+                                let countDownElement=document.getElementById("timer-lay");
+                                countDownElement.style.display='flex'
+                                let countDownSpanElement=document.getElementById("countdown");
+                                countDownSpanElement.innerText=countdown.toString();
+
+                                //开始计时
+                                let timer=setInterval(function (){
+
+                                    countdown--;
+                                    countDownSpanElement.innerText=countdown.toString();
+
+                                    //倒数为0是开始跳转
+                                    if(countdown===0){
+                                        clearInterval(timer);
+                                        //window.location.href=response.redirect;
+                                        //window.location.href="http://192.168.2.127:8070/chat-ai/";
+                                        window.location.href="http://192.168.179.1:8070/chat-ai/";
+                                    }
+                                },1000)//1秒执行一次
+
+                    }else if(status===403){
+                        console.log("status: "+status);
+                        //Invalid
+                        pointer("error-phone",message)
+                    }else{
+                        //fail
+                        let overlay = document.getElementById('popup-overlay');
+                        overlay.style.display = 'flex';
+                    }
+
+                },
+                    error: function (){
+
+                        let overlay = document.getElementById('popup-overlay');
+                        overlay.style.display = 'flex';
+
+                    }
+            })
+
+        }else {
+            return false;
+        }
+    }
+
+    function validateForm(){
+
+        let userObj={};
+        let count=0;
+
+        let usernameElement=document.getElementById("username");
+
+        if(usernameElement.value===""){
+            shakeElement(usernameElement)
+            pointer("error-username","用户名不能为空")
+            count++;
+        }
+
+        userObj["username"]=usernameElement.value;
+
+        let phoneElement=document.getElementById("phone");
+        if(phoneElement.value===""){
+            shakeElement(phoneElement)
+            pointer("error-phone","手机不能为空")
+            count++;
+        }
+
+        userObj["phone"]=phoneElement.value;
+
+        let emailElement=document.getElementById("email");
+        if(emailElement.value===""){
+            shakeElement(emailElement)
+            pointer("error-email","邮件不能为空");
+            count++;
+        }
+        userObj["email"]=emailElement.value;
+
+        let passwordElement=document.getElementById("password");
+        if(passwordElement.value ==="" || passwordElement.value.length<6){
+            shakeElement(passwordElement)
+            //pointer("error-password","")
+            document.getElementById("msg-password").style.color="red";
+            count++;
+        }else {
+            //密码加密
+            let key =CryptoJS.enc.Utf8.parse("chat-ai-key");
+            let encryptPassword=CryptoJS.AES.encrypt(passwordElement.value,key,{
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            userObj["password"]=encryptPassword.toString();
+        }
+        //userObj["password"]=passwordElement.value;
+
+        if(count===0){
+            return userObj;
+        }else {
+            return null;
+        }
+
+
+    }
+
+    function shakeElement(element) {
+        element.classList.add("shake");
+        setTimeout(function() {
+            element.classList.remove("shake");
+        }, 500);
+    }
+
+    function pointer(spanElm,message){
+        let spanName= document.getElementById(spanElm);
+        spanName.classList.remove("hidden");
+        if(message !==""){
+            spanName.innerText=message;
+        }
+        spanName.style.color="red";
+    }
+
+    function closePopup() {
+        var overlay = document.getElementById('popup-overlay');
+        overlay.style.display = 'none';
+    }
+
+</script>
+
+</html>

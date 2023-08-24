@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nan.chatai.dao.UserMapper">
+
+    <insert id="AddUser" parameterType="com.nan.chatai.entity.web.ChatUser">
+      insert INTO chat_ai_user
+      (ID,USER_NAME,PHONE,EMAIL,PASSWORD)
+       VALUE
+      (#{chatUser.id},#{chatUser.username},#{chatUser.phone},#{chatUser.email},#{chatUser.password});
+
+    </insert>
+
+    <select id="VerifyUserByPhone" parameterType="String" resultType="int">
+        select count(1) from chat_ai_user where PHONE=#{phone};
+    </select>
+
+    <select id="SelectUserByNameAndPassword" parameterType="String" resultType="com.nan.chatai.entity.web.ChatUser">
+        select ID as id
+        ,USER_NAME as username
+        ,PHONE as phone
+        ,EMAIL as email from chat_ai_user where USER_NAME =#{username} and PASSWORD=#{password};
+    </select>
+
+
+
+    <insert id="AddChatLog" parameterType="com.nan.chatai.entity.ChatLog">
+
+        INSERT into chat_log
+        (LOG_ID,USER_ID,SESSION_ID,USER_QUESTIONS,AI_ANSWER,TIME)
+        VALUES
+        (#{chatLog.logId},#{chatLog.userId},#{chatLog.sessionId},#{chatLog.userQuestions},#{chatLog.chatAnswer}, NOW());
+
+    </insert>
+
+</mapper>

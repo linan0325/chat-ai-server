@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container{
+            max-width: 400px;
+            margin: 70px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .container h1 {
+            text-align: center;
+            margin-bottom: 45px;
+            align-items: center;
+        }
+
+         .form-group{
+             position: relative;
+             display: none;
+        }
+
+
+
+        .container .form-group.active{
+            display: block;
+        }
+
+        /*.bottom-phone{*/
+        /*    display: block;*/
+        /*}*/
+
+
+        .username,
+        .password,
+        .code,
+        .phone{
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+
+        .login-but {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            margin-top: 20px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
+        /*.container .form-group .phone-verification */.code-but{
+            position: absolute;
+            top: 42%;
+            right: 2px;
+            /*margin-top: 20px;*/
+            background-color: #fff;
+            color: royalblue;
+            border: none;
+            /*outline: none;  // 去掉点击按钮后的边框*/
+
+        }
+        .container button:hover {
+            background-color: #45a049;
+
+        }
+
+        a,span {
+            text-decoration-line: none;
+            color: blue;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .msg{
+            margin-top: 20px;
+        }
+
+
+        .msg button:hover{
+            background-color: white;
+        }
+
+       .form-group button:hover{
+            background-color: white;
+        }
+
+        .back button:hover{
+            background-color: white;
+        }
+
+        .phone-submit button:hover{
+            background-color: #45a049;
+        }
+        .username-submit button:hover{
+            background-color: #45a049;
+        }
+
+        .bottom-phone,
+        .go-back,
+        .bottom-but{
+            /*align-items: center;*/
+            border: white;
+            font-size: 13px;
+            font-style: italic;
+            background-color: white;
+            color: royalblue;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .message-hint {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .shake {
+            animation: shake 1.2s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-10px);
+            }
+
+            20%, 40%, 60%, 80% {
+                transform: translateX(10px);
+            }
+        }
+
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+    <div class="back">
+        <button class="go-back" id="go-back" onclick="toggleLoginForm('username-password-group')" style="float: left"><< 返回</button>
+    </div>
+
+    <div class="h1">
+        <h1>登入 Chat AI </h1>
+    </div>
+
+    <div class="form-group active" id="username-password-group">
+        <span class="message-hint" id="error-username"></span>
+        <input class="username" id="username" type="text" placeholder="用户名" required>
+
+        <span class="message-hint" id="error-password"></span>
+        <input class="password" id="password" type="password" placeholder="密码" required>
+
+        <div class="username-submit">
+            <button class="login-but" type="submit" id="submit"  onclick="Login('username-password-group')">登入</button>
+        </div>
+
+    </div>
+
+    <div class="form-group" id="phone-verification-group">
+        <span class="message-hint" id="error-phone"></span>
+        <input class="phone" id="phone" type="text" placeholder="手机"  required>
+
+        <span class="message-hint" id="error-code"></span>
+        <input class="code" id="code" type="text" placeholder="输入验证码" required>
+
+        <button class="code-but" id="code-but" type="submit"  onclick="GetVerificationCode()">获取验证码</button>
+
+        <div class="phone-submit">
+            <button class="login-but" type="submit" id="phoneSubmit" onclick="LoginByPhone('phone-verification-group')">登入</button>
+        </div>
+
+    </div>
+
+    <div class="msg">
+        <button class="bottom-but" style="float: left" onclick="toRegister()">注册</button>
+
+        <button class="bottom-phone" id="phone-verification-button" style="margin-left: 15px" onclick="toggleLoginForm('phone-verification-group')">手机登入</button>
+        <button class="bottom-but" href="#" style="float: right">忘记密码</button>
+    </div>
+
+</div>
+
+</body>
+<script type="text/javascript">
+
+     function Login(formGroup){
+
+         let user=validateForm(formGroup);
+
+         if(user instanceof  Object){
+
+         //  $('#submit').disable();
+
+         $.ajax({
+             type: "POST",
+             url: "http://192.168.2.127:8070/chat-ai/user-login",
+            // url: "http://192.168.179.1:8070/chat-ai/user-login",
+             data: JSON.stringify(user),
+             contentType: "application/json;charset=utf-8",
+             complete: function (response){
+
+                 console.log(JSON.stringify(response))
+
+                 let status=JSON.parse(response["responseText"])["code"];
+                 let message=JSON.parse(response["responseText"])["message"];
+
+
+                 if(status===200){
+
+                     let userObject=JSON.parse(response["responseText"])["object"];
+                     console.log("userObject:"+typeof userObject)
+                     let userID=userObject["id"];
+                     console.log("userID:"+userID);
+
+                     window.location.href="http://192.168.2.127:8070/chat-ai/start/"+userID;
+                     //window.location.href="http://192.168.179.1:8070/chat-ai/start/"+userID;
+                 }else if(status===403){
+                     window.confirm(message);
+                 }else {
+                     window.confirm("系统故障，请稍后再试");
+                 }
+             },
+             error: function (){
+                // alert("系统故障，请稍后再试");
+                 window.confirm("系统故障，请稍后再试");
+             }
+         })
+
+         }else {
+             return false;
+         }
+     }
+
+
+     function LoginByPhone(){
+
+     }
+
+     function validateForm(formGroup){
+
+         let loginUserObj={};
+         let count=0;
+
+         if(formGroup==='username-password-group'){
+
+             let usernameElement= document.getElementById("username");
+
+             if(usernameElement.value===""){
+                 shakeElement(usernameElement)
+                 pointer("error-username","用户名不能为空")
+                 count++;
+             }
+
+             loginUserObj["username"]=usernameElement.value;
+
+             let passwordElement= document.getElementById("password")
+             if(passwordElement.value===""){
+                 shakeElement(passwordElement)
+                 pointer("error-password","密码不能为空")
+                 count++;
+             }else if(passwordElement.value.length<6){
+                 shakeElement(passwordElement)
+                 pointer("error-password","密码长度至少为 6 个字符")
+                 count++;
+             }else {
+                 //密码加密
+                 let key =CryptoJS.enc.Utf8.parse("chat-ai-key");
+                 let encryptPassword=CryptoJS.AES.encrypt(passwordElement.value,key,{
+                     mode: CryptoJS.mode.ECB,
+                     padding: CryptoJS.pad.Pkcs7
+                 });
+                 loginUserObj["password"]=encryptPassword.toString();
+             }
+         }else if(formGroup==='phone-verification-group'){
+
+             let phoneElement= document.getElementById("phone")
+             if(phoneElement.value==="" || phoneElement.value.length<11){
+                 shakeElement(phoneElement)
+                 pointer("error-phone","不是有效手机号")
+                 count++;
+             }
+             loginUserObj["password"]=phoneElement.value;
+
+             let codeElement= document.getElementById("code")
+             if(codeElement.value==="" || codeElement.value.length<4){
+                 shakeElement(phoneElement)
+                 pointer("error-code","不是有效验证码")
+                 count++;
+             }
+             loginUserObj["code"]=codeElement.value;
+         }
+
+         if(count===0){
+             return loginUserObj;
+         }else {
+             return null;
+         }
+
+     }
+
+     function toggleLoginForm(formGroup) {
+         var usernamePasswordGroup = document.getElementById('username-password-group');
+         var phoneVerificationGroup = document.getElementById('phone-verification-group');
+         var phoneVerificationButton=document.getElementById('phone-verification-button');
+         var goBackButton=document.getElementById('go-back');
+
+         if (formGroup === 'username-password-group') {
+
+             goBackButton.style.visibility="hidden";
+             phoneVerificationButton.style.visibility="visible";
+             usernamePasswordGroup.classList.add('active');
+             phoneVerificationGroup.classList.remove('active');
+
+         } else if (formGroup === 'phone-verification-group') {
+             goBackButton.style.visibility="visible";
+             phoneVerificationButton.style.visibility="hidden";
+             usernamePasswordGroup.classList.remove('active');
+             phoneVerificationGroup.classList.add('active');
+         }
+     }
+
+     function shakeElement(element) {
+         element.classList.add("shake");
+         setTimeout(function() {
+             element.classList.remove("shake");
+         }, 500);
+     }
+
+     function pointer(spanElm,message){
+         let spanName= document.getElementById(spanElm);
+         spanName.classList.remove("hidden");
+         if(message !==""){
+             spanName.innerText=message;
+         }
+         spanName.style.color="red";
+     }
+
+     function toRegister(){
+         window.location.href="http://192.168.2.127:8070/chat-ai/register-page";
+        // window.location.href="http://192.168.179.1:8070/chat-ai/register-page";
+     }
+
+     function GetVerificationCode(){
+         alert("获取验证码")
+     }
+
+
+</script>
+</html>

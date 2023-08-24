@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nan.chatai.dao.AppUserMapper">
+
+    <select id="selectAppUserByPhone" parameterType="String" resultType="int">
+        select COUNT(1) from app_user where PHONE_NO=#{phoneNo};
+    </select>
+
+    <insert id="insertAppUser" parameterType="com.nan.chatai.entity.app.AppUser">
+          INSERT into app_user
+             (USER_ID, PHONE_NO, USER_NAME,PASSWORD, AVATAR_URL,CREATE_TIME,UPDATE_TIME)
+             VALUE
+             (#{appUser.userId},#{appUser.phoneNo}, #{appUser.userName},#{appUser.password}, #{appUser.avatarUrl},NOW(), NOW());
+    </insert>
+
+    <select id="selectAppUserByPhoneAndPassword" parameterType="String" resultType="com.nan.chatai.entity.app.AppUser">
+        select USER_ID as userId,
+               USER_NAME as userName,
+               PHONE_NO as phoneNo,
+               AVATAR_URL as avatarUrl from  app_user where PHONE_NO=#{phone} and PASSWORD= #{password};
+    </select>
+
+    <select id="checkVerifyIfExist" parameterType="String" resultType="int">
+        select COUNT(1) from verify_code_record where PHONE=#{phone};
+    </select>
+
+    <select id="verifyPhone" parameterType="String" resultType="int">
+        select count(1) from app_user where PHONE_NO=#{phone};
+    </select>
+
+    <update id="changeUserAvatar" parameterType="String">
+     update app_user set AVATAR_URL=#{avatarUrl} where USER_ID=#{userId}
+    </update>
+
+
+
+</mapper>

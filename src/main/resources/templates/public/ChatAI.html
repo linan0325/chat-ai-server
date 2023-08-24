@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="utf-8">
+    <title>AI Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-panel {
+            flex: 1;
+            background-color: #f1f1f1;
+            /*padding: 15px;*/
+        }
+
+        .right-panel {
+            flex: 4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: scroll;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-name{
+            margin-left: 20px;
+            font-style: italic;
+            color: black;
+        }
+
+        .question-log {
+            list-style-type: none;
+            padding: 0;
+            /*margin-top: 40px;*/
+        }
+
+        .question {
+            margin-bottom: 5px;
+            background-color: #cccccc;
+            padding: 6px;
+            border-radius: 5px;
+        }
+
+        .input-container {
+
+            display: flex;
+            width: 100%;
+            margin: auto auto 50px;
+            /*line-height:60px;*/
+            border-top:1px solid #ccc;
+            bottom:0;
+            align-items: center; /* 垂直居中 */
+        }
+
+        .message-input {
+            flex: 1;
+            height: 45%;
+            line-height:40px;
+            border-radius:7px;
+            border:1px solid #ccc;
+            float:left;
+            margin-left:5px;
+            margin-top: 30px;
+            outline:none;
+            padding:0 5px;
+        }
+
+        .send-button {
+            height: 45px;
+            padding: 10px 30px;
+            margin-right: 20px;
+            margin-left:10px;
+            margin-top: 30px;
+            background-color: #4CAF50;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 20px;
+
+        }
+
+        .question-msg{
+            color: royalblue;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+
+        .chat_box{
+            align-items: center; /* 垂直居中 */
+            flex-direction: column;
+            width: 100%;
+            height:auto;
+            min-height: 100px;
+            overflow-y:scroll;
+        }
+
+        .chat_box::-webkit-scrollbar {display:none}
+        .chat_box div{
+            margin:0 0 5px;
+            position:relative;
+        }
+
+
+        .chat_box .ai_left{
+            min-height: 100px;
+            border-top:0px solid #ccc;
+            border-bottom:0px solid #ccc;
+            bottom:0;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center; /* 垂直居中 */
+
+        }
+
+        .chat_box .user_left{
+            min-height: 100px;
+            border-top:0px solid #ccc;
+            border-bottom:0px solid #ccc;
+            bottom:0;
+            background-color: #fff;
+            display: flex;
+            align-items: center; /* 垂直居中 */
+            font-size: 14px;
+            font-style: initial;
+
+
+
+        }
+
+        .chat_box img{
+            margin-right: 10px;
+            margin-left: 10px;
+            width: 30px;
+            height: 30px;
+        }
+
+        .user_content,
+        .ai_content{
+           /*
+           overflow-wrap: break-word;
+            */
+            word-wrap: break-word;
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="left-panel">
+        <div class="user-info">
+            <img class="user-avatar" th:src="@{/web-images/user-head-sculpture.jpg}" alt="User Avatar" id="user-avatar">
+            <h3 class="user-name" th:text="${#session.getAttribute('user-name')}" alt="User Name">User Name</h3>
+        </div>
+
+        <div class="question-msg">
+            <span>历史提问</span>
+        </div>
+        <ul class="question-log">
+            <li class="question">
+                <p>How are you?</p>
+            </li>
+            <li class="question">
+                <p>What's the weather like today?</p>
+            </li>
+            <!-- 添加更多提问记录 -->
+        </ul>
+    </div>
+
+    <div class="right-panel">
+
+
+        <div class="chat_box" id="chat_box">
+
+<!--            <div class="user_left">-->
+<!--                <img src="/static/images/user-head-sculpture.jpg">-->
+<!--                <pre class="user_content" id="user_question"></pre>-->
+<!--            </div>-->
+
+<!--            <div class="ai_left">-->
+<!--                <img src="img/2.jpg">-->
+<!--                <pre class="ai_content" id="ai_answer">你好，有什么可以帮到你！</pre>-->
+<!--            </div>-->
+
+        </div>
+
+
+        <div class="input-container" id="input-container">
+            <textarea class="message-input" type="text"  id="message" placeholder="请输入....." oninput="handleWidth('message')"></textarea>
+            <button class="send-button" id="send" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+
+    let url = this.location.href;
+
+    function handleWidth(elementId){
+        let elementById = document.getElementById(elementId);
+        let textLength=elementById.value.length;
+        if(textLength>80){
+            document.getElementById("input-container").style.height='40%';
+            elementById.style.height="100%"
+        }
+
+    }
+
+    //输入框回车发送消息
+    let elementById = document.getElementById("message");
+    elementById.addEventListener("keydown",function (e){
+        if(e.keyCode===13 && !e.shiftKey ){
+           e.preventDefault()// 阻止回车
+            sendMessage();
+       }
+
+    });
+    
+    let sendElement= document.getElementById("send");
+    let messageElement= document.getElementById("message");
+    let chat_box_element = document.getElementsByClassName("chat_box")[0];
+    let inputElement = document.getElementById("input-container");
+    let userImage = document.getElementById("user-avatar");
+
+    let user_question='';
+
+   // sendElement.onclick=
+        function sendMessage(){
+   if(messageElement.value===''){
+       alert("请输入内容")
+   }else{
+
+       let divUserElement = document.createElement("div");
+       let imageUserElement = document.createElement("img");
+      // let preUserElement = document.createElement("pre");
+       let preUserElement = document.createElement("p");
+
+       divUserElement.appendChild(imageUserElement);
+       divUserElement.appendChild(preUserElement);
+       chat_box_element.insertBefore(divUserElement,chat_box_element.lastChild);
+
+       divUserElement.className='user_left';
+       preUserElement.id='user_question';
+       preUserElement.className='user_content';
+       preUserElement.textContent=messageElement.value;
+
+       imageUserElement.src=userImage.src;
+       user_question=messageElement.value;
+
+       messageElement.value='';
+       inputElement.style.height='';
+       messageElement.style.height='45%';
+
+       //answer
+       let divAiElement = document.createElement("div");
+       let imageAiElement = document.createElement("img");
+       let preAiElement = document.createElement("pre");
+       divAiElement.className='ai_left';
+       preAiElement.id="ai_answer";
+       preAiElement.className="ai_content"
+      // imageAiElement.src="http://192.168.2.127:8070//web-images/ai-image.png";
+       imageAiElement.src="http://192.168.179.1:8070//web-images/ai-image.png";
+       divAiElement.appendChild(imageAiElement);
+       divAiElement.appendChild(preAiElement);
+
+       chat_box_element.insertBefore(divAiElement,chat_box_element.lastChild);
+
+       // connect WebSocket
+       if(!ConnectWebSocket(preAiElement)) preAiElement.textContent="会话失败，请稍后再试......";
+   }
+
+    }
+
+
+    let websocket=null;
+    async function ConnectWebSocket(preAiElement) {
+
+        let url_arr = url.split("/");
+
+        let userId = url_arr[url_arr.length - 1];
+
+        //判断当前浏览器是否支持WebSocket
+        if ('WebSocket' in window) {
+           // websocket = new WebSocket("ws://192.168.2.127:8070/ws/" + userId);//此处地址在分情况测试的时候需要修改
+            websocket = new WebSocket("ws://192.168.179.1:8070/ws/" + userId);
+        } else {
+            alert('Not support websocket')
+            return false
+        }
+
+
+        await new Promise(resolve => {
+            websocket.onopen = function (e) {
+                resolve(e.data)
+            }
+        });
+
+        console.log("user_question: "+user_question);
+        websocket.send(user_question);
+
+        //接收到消息时
+        websocket.onmessage = function (event) {
+           // console.log(event)
+
+            let answer = event.data;
+
+            if(preAiElement.textContent===''){
+                preAiElement.textContent=answer;
+            }else {
+                preAiElement.append(answer);
+            }
+        }
+
+        //发生错误时
+        websocket.onerror = function () {
+            alert("会话连接失败")
+            return false;
+        };
+
+        return true;
+    }
+
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function () {
+        websocket.close();
+    }
+
+
+    function sendQuestion(question_content){
+        var msg={
+            from: "",
+            to: "chat-ai",
+            text: question_content
+        };
+        console.log(msg);
+        if(websocket.readyState===1){
+            websocket.send(JSON.stringify(msg));
+        }else {
+            console.log(websocket.readyState)
+        }
+
+    }
+
+
+
+
+</script>
+</html>
