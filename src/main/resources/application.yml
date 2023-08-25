@@ -17,8 +17,7 @@ spring:
 
 chat-ai:
   url: "https://api.openai.com/v1/chat/completions"
-#  key: "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"
-  key: "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"
+  key:
   proxy:
     host: 127.0.0.1
     #host: 192.168.2.127
