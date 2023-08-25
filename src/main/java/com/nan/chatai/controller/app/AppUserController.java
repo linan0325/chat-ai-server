@@ -148,7 +148,6 @@ public class AppUserController {
     @PostMapping("/change-user-password")
     @ResponseBody
     public RE changeUserPasswordByUserId(@RequestBody AppUser appUser){
-
         try{
             appUser.setPassword(aesEncrypt.encrypt(appUser.getPassword()));
             appUserService.changeUserPasswordByUserId(appUser);
@@ -156,7 +155,6 @@ public class AppUserController {
             e.printStackTrace();
             return  RE.Fail("修改失败");
         }
-
         return RE.Success("修改成功");
     }
 }
