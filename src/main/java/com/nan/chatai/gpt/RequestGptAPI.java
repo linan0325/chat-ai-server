@@ -187,7 +187,8 @@ public class RequestGptAPI {
         userMsg.get(userId).addMessages(new Message("user",questions));
 
         String ArgString= JSON.toJSONString(userMsg.get(userId));
-         //System.out.println("ArgString:"+ArgString);
+         System.out.println("ArgString:"+ArgString);
+
         AsyncRequestBuilder asyncRequest = asyncRequestBuilder(ArgString);
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -208,7 +209,7 @@ public class RequestGptAPI {
             protected void data(CharBuffer charBuffer, boolean b) throws IOException {
                 //接收请求
                 String AnswerString = charBuffer.toString();
-                //System.out.println("AnswerString:"+AnswerString);
+                System.out.println("AnswerString:"+AnswerString);
                 if(!AnswerString.contains("data:") && AnswerString.contains("\"error\"")){
                     AnswerString=AnswerString.replaceAll("\\n","");
                     ChatGptError chatGptError =(ChatGptError) JSON.parseObject(AnswerString, ChatGptError.class);
@@ -291,7 +292,7 @@ public class RequestGptAPI {
 //        } catch (IOException ioException) {
 //            ioException.printStackTrace();
 //        }
-
+        System.out.printf(answerRecord.toString());
         return answerRecord.toString();
     }
 
@@ -300,8 +301,8 @@ public class RequestGptAPI {
         //创建一个请求
         AsyncRequestBuilder asyncRequest = AsyncRequestBuilder.post(url);
 
-        ContentType contentType = ContentType.create("text/plain", charset);
-        asyncRequest.setEntity(requestParameter,contentType);
+      //  ContentType contentType = ContentType.create("text/plain", charset);
+        asyncRequest.setEntity(requestParameter);
         asyncRequest.setCharset(charset);
 
         // 设置请求头

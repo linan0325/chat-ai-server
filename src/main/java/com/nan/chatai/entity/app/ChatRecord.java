@@ -13,7 +13,7 @@ public class ChatRecord {
     @TableField("LOG_ID")
     private String logId;
     @TableField("USER_ID")
-    private String userId;
+    private String c;
     @TableField("SESSION_ID")
     private String sessionId;
     @TableField("USER_QUESTIONS")

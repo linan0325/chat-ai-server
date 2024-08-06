@@ -23,8 +23,8 @@ class ChatAiServerApplicationTests {
     @Test
     void contextLoads() {
         //29fb7f52-a6be-4a48-a843-32f936dbedd8
-        userChatRecordService.selectChatRecordBySessionId("29fb7f52-a6be-4a48-a843-32f936dbedd8");
-        //requestGptAPI.GetAnswerFromGpt(System.out::print,"你好","863754fd-2c41-4a65-9dcd-da03d7ca3819");
+       // userChatRecordService.selectChatRecordBySessionId("29fb7f52-a6be-4a48-a843-32f936dbedd8");
+        requestGptAPI.GetAnswerFromGpt(System.out::print,"你好","863754fd-2c41-4a65-9dcd-da03d7ca3819");
 
     }
 
